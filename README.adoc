@@ -1,40 +1,40 @@
-= sirena-mermaid-parg
+= mermaid/mermaid.parg
 
 The Mermaid grammar in https://github.com/parsanol/parsanol-rs[PARG] —
 the parsanol grammar language (ABNF-flavoured, PEG semantics).
 
 This repository is the canonical home of the grammar and its compiled
-artifact; the https://github.com/claricle/sirena[sirena] gem consumes
-the artifact for its native parse path (claricle/sirena#342).
+artifact; the https://github.com/etassia/etassia[etassia] gem consumes
+the artifact for its native parse path (etassia/etassia#342).
 
 == Layout
 
-* `mermaid.parg` — the grammar source (the contract). Each diagram type
-  is one entry; the rules mirror sirena's Parslet grammars
-  (`lib/sirena/parser/grammars/*.rb`) rule for rule.
+* `mermaid/mermaid.parg` — the grammar source (the contract). Each diagram type
+  is one entry; the rules mirror etassia's Parslet grammars
+  (`lib/etassia/parser/grammars/*.rb`) rule for rule.
 * `mermaid.json` — the compiled artifact (checksummed envelope),
   compiled with the released parsanol:
 +
 ----
-parsanol parg compile mermaid.parg -o mermaid.json
+parsanol parg compile mermaid/mermaid.parg -o mermaid.json
 ----
 
 == CI
 
 CI installs the released `parsanol` gem and runs, on every push/PR:
 
-* `parsanol parg test mermaid.parg` — the embedded accept/reject tests
+* `parsanol parg test mermaid/mermaid.parg` — the embedded accept/reject tests
 * a fresh compile checked for *payload parity* against the committed
   artifact (envelope `checksum`, `compiler_version` and `unicode_tables` stripped; the last is the Ruby build stamp, e.g. "onigmo (Ruby 3.4.8)")
 
-== How sirena uses it
+== How etassia uses it
 
-sirena vendors `mermaid.json` and routes a diagram type to its entry
+etassia vendors `mermaid.json` and routes a diagram type to its entry
 when the parsanol engine loads. The native path is an accelerator only:
 input an entry rejects, an unreadable encoding, or a builder decline
 (for example Parslet's `"[]"` for an empty accessibility text) all fall
 back to the Parslet grammar, which stays the source of every positioned
-`ParseError`. Model parity is enforced in sirena's specs over the whole
+`ParseError`. Model parity is enforced in etassia's specs over the whole
 corpus plus an edge table. Set `SIRENA_NATIVE_PARSER=ruby` to force the
 fallback.
 
@@ -42,11 +42,11 @@ fallback.
 
 Entries: `info`, `pie`. The remaining diagram types (flowchart,
 sequence, class, state, ER, gantt, ...) still parse through Parslet in
-sirena and move here one entry at a time.
+etassia and move here one entry at a time.
 
 == Benchmark
 
-Parse time, best of 5 (sirena `scripts/benchmark_native_parse.rb`,
+Parse time, best of 5 (etassia `scripts/benchmark_native_parse.rb`,
 Apple silicon, Ruby 3.4.8, parsanol 1.3.130):
 
 [cols="2,1,1,1"]
@@ -62,4 +62,4 @@ Apple silicon, Ruby 3.4.8, parsanol 1.3.130):
 
 The grammar is engine-neutral JSON. Ruby consumes it through
 `Parsanol::PARG::Artifact` (native Rust extension, pure-Ruby atom
-runtime as engine fallback). Other runtimes: see claricle/sirena#343.
+runtime as engine fallback). Other runtimes: see etassia/etassia#343.
