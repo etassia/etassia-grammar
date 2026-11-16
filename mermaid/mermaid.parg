@@ -1809,6 +1809,23 @@ grammar Mermaid version "0.1.0" edition 2 {
 
   state_diagram_style = "style" as style_keyword 1*sp state_diagram_style_targets as style_targets [ 1*sp 1*( 1*( !( "\t" / "\n" / "\r" / " " / "%" / ";" ) ANY ) / le_mid / state_diagram_line_char ) as style_props ] line_end
 
+  ## Config directives: scale / hide / classDef / accDescr / // comments.
+  ## Each keyword demands trailing whitespace, so a state named scaleX
+  ## still reaches the standalone rule.
+  state_diagram_directive_rest = *( 1*( !( "\t" / "\n" / "\r" / " " / "%" / ";" ) ANY ) / le_mid / state_diagram_line_char )
+
+  state_diagram_scale = "scale" as directive_keyword 1*sp [ state_diagram_directive_rest ] line_end
+
+  state_diagram_hide = "hide" as directive_keyword 1*sp [ state_diagram_directive_rest ] line_end
+
+  state_diagram_class_def = "classDef" as directive_keyword 1*sp [ state_diagram_directive_rest ] line_end
+
+  state_diagram_acc_descr = "accDescr" as directive_keyword ( 1*sp "{" ws *( !"}" ANY ) ws "}" line_end / *sp ":" *sp [ state_diagram_directive_rest ] line_end )
+
+  state_diagram_slash_comment = "//" as directive_keyword [ state_diagram_directive_rest ] line_end
+
+  state_diagram_directive = state_diagram_scale / state_diagram_hide / state_diagram_class_def / state_diagram_acc_descr / state_diagram_slash_comment
+
   state_diagram_end = "[*]" / !state_diagram_reserved state_diagram_id
 
   state_diagram_transition_label = *sp ":" *sp 1*( 1*( !( "\t" / "\n" / "\r" / " " / "%" / "-" / ";" ) ANY ) / le_mid / !"-->" state_diagram_line_char ) as label_text
@@ -1833,7 +1850,7 @@ grammar Mermaid version "0.1.0" edition 2 {
 
   state_diagram_standalone = !state_diagram_reserved state_diagram_id as state_id [ *sp state_diagram_bare_description ] line_end
 
-  state_diagram_statement = state_diagram_direction / state_diagram_style / state_diagram_empty / state_diagram_declaration / state_diagram_note_block / state_diagram_floating_note / state_diagram_note / state_diagram_transition / state_diagram_standalone
+  state_diagram_statement = state_diagram_direction / state_diagram_style / state_diagram_directive / state_diagram_empty / state_diagram_declaration / state_diagram_note_block / state_diagram_floating_note / state_diagram_note / state_diagram_transition / state_diagram_standalone
 
   state_diagram_composite_statement = "--" as concurrent_sep line_end / state_diagram_statement
 
@@ -1850,6 +1867,13 @@ grammar Mermaid version "0.1.0" edition 2 {
     accept "stateDiagram-v2\nstate A {\n  B --> C\n  --\n  D\n}"
     accept "stateDiagram-v2\nnote right of A : hi"
     accept "stateDiagram-v2\nnote left of A\n  body\nend note"
+    accept "stateDiagram-v2\nscale 350 width\n[*] --> A"
+    accept "stateDiagram-v2\nhide empty description\n[*] --> A"
+    accept "stateDiagram-v2\n// a comment\n[*] --> A"
+    accept "stateDiagram-v2\naccDescr {\n  multi\n}\n[*] --> A"
+    accept "stateDiagram-v2\naccDescr: single\n[*] --> A"
+    accept "stateDiagram-v2\nclassDef s background:#bbb\n[*] --> A"
+    accept "stateDiagram-v2\nscaleX --> A"
     reject "stateDiagram-v2 direction LR"
     reject "stateDiagram-v2\nA --> class"
     reject "state A"
