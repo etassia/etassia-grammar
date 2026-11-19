@@ -11,7 +11,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest, macos-latest ]
+        family: [ mermaid, plantuml ]
     runs-on: ${{ matrix.os }}
+    env:
+      FAMILY: ${{ matrix.family }}
+      GRAMMAR: ${{ matrix.family }}/${{ matrix.family }}.parg
+      ARTIFACT: ${{ matrix.family }}/${{ matrix.family }}.json
     steps:
       - uses: actions/checkout@v6
       - uses: ruby/setup-ruby@v1
@@ -19,12 +24,12 @@ jobs:
           ruby-version: '3.3'
       # Compile with the parsanol that built the committed artifact, so the
       # payload check compares like with like when sirena moves to a new release.
-      - run: gem install parsanol -v "$(ruby -rjson -e 'print JSON.parse(File.read("mermaid.json"))["compiler_version"]')" --no-document
+      - run: gem install parsanol -v "$(ruby -rjson -e 'print JSON.parse(File.read(ENV.fetch("ARTIFACT")))["compiler_version"]')" --no-document
       - name: Grammar tests (embedded accept/reject)
-        run: parsanol parg test mermaid.parg
+        run: parsanol parg test "$GRAMMAR"
       - name: Compile and verify committed artifact payload
         run: |
-          parsanol parg compile mermaid.parg -o /tmp/fresh.json
+          parsanol parg compile "$GRAMMAR" -o /tmp/fresh.json
           ruby -rjson -e '
             strip = lambda do |f|
               j = JSON.parse(File.read(f))
@@ -36,11 +41,11 @@ jobs:
               j.delete("byte_checksum")
               j
             end
-            a = strip.call("mermaid.json"); b = strip.call("/tmp/fresh.json")
+            a = strip.call(ENV.fetch("ARTIFACT")); b = strip.call("/tmp/fresh.json")
             unless a == b
               (a.keys | b.keys).each { |k| puts "differs: #{k}" unless a[k] == b[k] }
               puts "ruby #{RUBY_VERSION}"
-              abort "artifact payload drift: regenerate mermaid.json with the released parsanol"
+              abort "artifact payload drift: regenerate #{ENV.fetch("ARTIFACT")} with the released parsanol"
             end
             puts "payload parity OK"
           '
