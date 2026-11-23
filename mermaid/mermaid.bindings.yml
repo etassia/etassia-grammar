@@ -1,0 +1,43 @@
+# Mermaid grammar: rule -> model bindings (parsanol --model-bindings
+# sidecar, coradoc#307). Conservative: only the per-kind entry rules
+# whose captures map 1:1 onto the named attributes of the Etassia
+# diagram models the consumers inflate them into.
+version: 1
+rules:
+  ## `"label" : value` -> PieSlice(label:, value:)
+  pie_entry:
+    keys: [label, value]
+    model: Etassia::Diagram::PieSlice
+    captures:
+      label: label
+      value: value
+  ## `id [label]` -> SankeyNode(id:, label:)
+  sankey_node_declaration:
+    keys: [node_id, node_label]
+    model: Etassia::Diagram::SankeyNode
+    captures:
+      id: node_id
+      label: node_label
+  ## `source, target, value` -> SankeyFlow(source:, target:, value:)
+  sankey_flow_entry:
+    keys: [source, target, value]
+    model: Etassia::Diagram::SankeyFlow
+    captures:
+      source: source
+      target: target
+      value: value
+  ## `time : descriptions` -> TimelineEvent(time:, descriptions:)
+  timeline_event:
+    keys: [time, descriptions]
+    model: Etassia::Diagram::TimelineEvent
+    captures:
+      time: time
+      descriptions: descriptions
+  ## `name : score : actors` -> JourneyTask(name:, score:, actors:)
+  user_journey_task:
+    keys: [name, score, actors]
+    model: Etassia::Diagram::JourneyTask
+    captures:
+      name: name
+      score: score
+      actors: actors

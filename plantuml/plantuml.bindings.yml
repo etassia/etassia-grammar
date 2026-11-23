@@ -1,0 +1,39 @@
+# PlantUML grammar: rule -> model bindings (parsanol --model-bindings
+# sidecar, coradoc#307). Conservative: the per-diagram wrapper rules
+# carry no captures of their own, so the table binds the core clause
+# rules whose captures map 1:1 onto the named attributes of the Ruby
+# readers' models.
+version: 1
+rules:
+  ## `kind "title" as id with period/pulse/offset`
+  ## -> Timing::Participant(kind:, title:, id:, period:, pulse:, offset:)
+  tm_participant:
+    keys: [kind, title, id, period, pulse, offset]
+    model: Etassia::Notation::PlantUML::Timing::Participant
+    captures:
+      kind: kind
+      title: title
+      id: id
+      period: period
+      pulse: pulse
+      offset: offset
+  ## `id is state` -> Timing::Change(id:, state:)
+  tm_change:
+    keys: [id, state]
+    model: Etassia::Notation::PlantUML::Timing::Change
+    captures:
+      id: id
+      state: state
+  ## `scale N as M pixels` -> Timing::Diagram(scale_units:, pixels_per_unit:)
+  tm_scale:
+    keys: [units, pixels]
+    model: Etassia::Notation::PlantUML::Timing::Diagram
+    captures:
+      scale_units: units
+      pixels_per_unit: pixels
+  ## `title text` -> NodeGraph::Graph(title:)
+  uc_title:
+    keys: [text]
+    model: Etassia::Notation::PlantUML::NodeGraph::Graph
+    captures:
+      title: text
