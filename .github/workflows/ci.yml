@@ -36,6 +36,11 @@ jobs:
               j.delete("checksum")
               j.delete("compiler_version")
               j.delete("unicode_tables")
+              # The rule -> model binding table is not parse semantics
+              # (semantics_hash ignores it; the checksum covers it), and a
+              # fresh compile carries no sidecar, so the table never takes
+              # part in the payload compare.
+              j.delete("model_bindings")
               # byte_checksum hashes the serialized artifact, which embeds the Ruby
               # build stamp above, so it moves with the Ruby version like checksum.
               j.delete("byte_checksum")
